@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Lab 1 · Notebook 1 — Capa Bronce: ingesta de clientes
 # MAGIC **Producto de datos:** Clientes · **Lee:** `/Volumes/externo/sistema_origen/archivos/clientes.csv` · **Escribe:** `clientes.bronce.clientes`
@@ -43,6 +47,25 @@ df_bronce = (
 
 print("Filas leídas:", df_bronce.count())
 display(df_bronce)
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CREATE OR REPLACE TABLE clientes.bronce.clientes AS
+# MAGIC SELECT *
+# MAGIC      , current_timestamp() AS _fecha_ingesta
+# MAGIC FROM read_files(
+# MAGIC     '/Volumes/externo/sistema_origen/archivos/clientes.csv'
+# MAGIC   , format      => 'csv'
+# MAGIC   , header      => true
+# MAGIC   , inferSchema => false
+# MAGIC );
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT *
+# MAGIC FROM clientes.bronce.clientes;
 
 # COMMAND ----------
 

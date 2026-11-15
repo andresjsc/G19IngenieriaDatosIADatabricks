@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Lab 1 · Notebook 3 — Capa Oro: datos refinados listos para consumir
 # MAGIC **Producto de datos:** Clientes · **Lee:** `clientes.plata.clientes` · **Escribe:** 3 tablas en `oro.clientes`
@@ -135,6 +139,12 @@
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC SELECT *
+# MAGIC FROM clientes.oro.resumen_clientes_ciudad
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## 3 · Resumen por segmento (rango de edad y género)
 # MAGIC **Qué esperar:** una fila por cada combinación de rango de edad y género que exista en los datos.
@@ -154,6 +164,12 @@
 # MAGIC        round(avg(AntiguedadMeses), 1)       AS AntiguedadPromedioMeses
 # MAGIC FROM clientes.oro.dim_clientes
 # MAGIC GROUP BY RangoEdad, Genero;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT *
+# MAGIC FROM clientes.oro.resumen_clientes_segmento
 
 # COMMAND ----------
 

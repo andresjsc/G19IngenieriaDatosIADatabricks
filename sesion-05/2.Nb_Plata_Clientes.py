@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Lab 1 · Notebook 2 — Capa Plata: limpieza de clientes
 # MAGIC **Producto de datos:** Clientes · **Lee:** `clientes.bronce.clientes` · **Escribe:** `clientes.plata.clientes`
@@ -138,6 +142,50 @@ print("Columnas en plata:", df_renombrado.columns)
 
 # COMMAND ----------
 
+display(df_renombrado)
+
+# COMMAND ----------
+
+df_temporal = (
+    df_renombrado
+        .select(
+            F.col("NumeroIdentificacion").alias("NumeroIdentificacion_Original"),
+            F.regexp_replace("NumeroIdentificacion", r"[.\s-]", "").alias("NumeroIdentificacion_Limpia")
+        )
+        .filter(F.col("NumeroIdentificacion_Original") == F.col("NumeroIdentificacion_Limpia"))
+)
+
+display(df_temporal)
+
+# COMMAND ----------
+
+df_sin_separadores = df_renombrado.withColumn(
+    "NumeroIdentificacion", F.regexp_replace("NumeroIdentificacion", r"[.\s-]", "")
+)
+display(df_sin_separadores)
+
+# COMMAND ----------
+
+df_sin_nulos = df_sin_separadores.filter(
+    F.col("NumeroIdentificacion").isNotNull() & (F.col("NumeroIdentificacion") != "")
+)
+display(df_sin_nulos)
+
+# COMMAND ----------
+
+df_id_valida = df_sin_nulos.filter(
+    F.col("NumeroIdentificacion").rlike(f"^[0-9]{{{MIN_DIGITOS},{MAX_DIGITOS}}}$")
+)
+display(df_id_valida)
+
+# COMMAND ----------
+
+display(
+    df_id_valida.filter(F.col("NumeroIdentificacion") == "10234A5678")
+)
+
+# COMMAND ----------
+
 MIN_DIGITOS, MAX_DIGITOS = 8, 10                       # regla de negocio del documento
 
 df_sin_separadores = df_renombrado.withColumn(
@@ -153,6 +201,12 @@ df_id_valida = df_sin_nulos.filter(
 )
 
 print(f"Bronce: {df_renombrado.count()} | Sin nulos: {df_sin_nulos.count()} | Con dígitos válidos: {df_id_valida.count()}")
+
+# COMMAND ----------
+
+display(
+    df_id_valida.filter(F.col("NumeroIdentificacion") == "10234A5678")
+)
 
 # COMMAND ----------
 

@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Lab 1 · Notebook 0 — Configuración: fuente externa y lakehouse
 # MAGIC **Curso:** Ingeniería de Datos e IA con Databricks · **Clase 05:** ETL con Spark SQL y PySpark · **Producto de datos:** Clientes

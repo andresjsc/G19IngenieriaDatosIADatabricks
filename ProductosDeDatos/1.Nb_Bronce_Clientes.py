@@ -108,11 +108,11 @@ display(df_bronce)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT count(*)                                  AS filas,
-# MAGIC        count(DISTINCT ciudad)                    AS ciudades_distintas,
-# MAGIC        count(DISTINCT estado)                    AS estados_distintos,
-# MAGIC        count(DISTINCT genero)                    AS generos_distintos,
-# MAGIC        count_if(numero_identificacion IS NULL)   AS identificaciones_nulas
+# MAGIC SELECT count(*)                                  AS filas
+# MAGIC     ,  count(DISTINCT ciudad)                    AS ciudades_distintas
+# MAGIC     ,  count(DISTINCT estado)                    AS estados_distintos
+# MAGIC     ,  count(DISTINCT genero)                    AS generos_distintos
+# MAGIC     ,  count_if(numero_identificacion IS NULL)   AS identificaciones_nulas
 # MAGIC FROM clientes.bronce.clientes;
 
 # COMMAND ----------

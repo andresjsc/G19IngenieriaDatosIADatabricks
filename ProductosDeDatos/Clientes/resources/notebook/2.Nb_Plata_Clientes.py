@@ -56,8 +56,15 @@
 
 # COMMAND ----------
 
+with open("../sql/plata_ddl.sql", "r", encoding="utf-8") as f:
+    ddl_plata = f.read().format(catalogo=catalogo)
+
+spark.sql(ddl_plata)
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC CREATE TABLE IF NOT EXISTS clientes.plata.clientes (
+# MAGIC /*CREATE TABLE IF NOT EXISTS clientes.plata.clientes (
 # MAGIC   NumeroIdentificacion STRING NOT NULL COMMENT 'Número de documento del cliente: solo dígitos, de 8 a 10 caracteres',
 # MAGIC   TipoIdentificacion   STRING    COMMENT 'Tipo de documento: CC (cédula), CE (cédula de extranjería), TI (tarjeta de identidad), PA (pasaporte) o ND (no definido)',
 # MAGIC   Nombres              STRING    COMMENT 'Nombres del cliente con Mayúscula Inicial',
@@ -79,7 +86,7 @@
 # MAGIC   'delta.autoOptimize.autoCompact'   = 'true',
 # MAGIC   'delta.enableChangeDataFeed'       = 'true',
 # MAGIC   'clusterByAuto'                    = 'true'
-# MAGIC );
+# MAGIC );*/
 
 # COMMAND ----------
 
@@ -281,8 +288,15 @@ display(df_paso_python)
 
 # COMMAND ----------
 
+with open("../sql/plata_vw_clientes_limpios.sql", "r", encoding="utf-8") as f:
+    sql_vw_limpios = f.read()
+
+spark.sql(sql_vw_limpios)
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC CREATE OR REPLACE TEMP VIEW vw_clientes_limpios AS
+# MAGIC /*CREATE OR REPLACE TEMP VIEW vw_clientes_limpios AS
 # MAGIC WITH estandarizado AS (
 # MAGIC   SELECT NumeroIdentificacion,
 # MAGIC          CASE WHEN TipoIdentificacion IN ('CC', 'CE', 'TI') THEN TipoIdentificacion
@@ -309,7 +323,7 @@ display(df_paso_python)
 # MAGIC   SELECT *, row_number() OVER (PARTITION BY NumeroIdentificacion ORDER BY FechaRegistro DESC) AS n
 # MAGIC   FROM estandarizado
 # MAGIC )
-# MAGIC WHERE n = 1;                -- solo el registro más reciente de cada cliente
+# MAGIC WHERE n = 1;                -- solo el registro más reciente de cada cliente*/
 
 # COMMAND ----------
 
@@ -327,17 +341,25 @@ display(df_paso_python)
 
 # COMMAND ----------
 
-resultado = spark.sql("""
-    INSERT OVERWRITE clientes.plata.clientes
-        (NumeroIdentificacion, TipoIdentificacion, Nombres, Apellidos, Email, Telefono,
-         FechaNacimiento, Ciudad, Genero, FechaRegistro, Estado, FechaIngesta, FechaProceso)
-    SELECT NumeroIdentificacion, TipoIdentificacion, Nombres, Apellidos, Email, Telefono,
-           FechaNacimiento, Ciudad, Genero, FechaRegistro, Estado, FechaIngesta,
-           current_timestamp() AS FechaProceso
-    FROM vw_clientes_limpios
-""")
+with open("../sql/plata_insert_clientes.sql", "r", encoding="utf-8") as f:
+    sql_insert_plata = f.read().format(catalogo=catalogo)
 
+resultado = spark.sql(sql_insert_plata)
 display(resultado)
+
+# COMMAND ----------
+
+# resultado = spark.sql("""
+#     INSERT OVERWRITE clientes.plata.clientes
+#         (NumeroIdentificacion, TipoIdentificacion, Nombres, Apellidos, Email, Telefono,
+#          FechaNacimiento, Ciudad, Genero, FechaRegistro, Estado, FechaIngesta, FechaProceso)
+#     SELECT NumeroIdentificacion, TipoIdentificacion, Nombres, Apellidos, Email, Telefono,
+#            FechaNacimiento, Ciudad, Genero, FechaRegistro, Estado, FechaIngesta,
+#            current_timestamp() AS FechaProceso
+#     FROM vw_clientes_limpios
+# """)
+
+# display(resultado)
 
 # COMMAND ----------
 
@@ -349,10 +371,17 @@ display(resultado)
 
 # COMMAND ----------
 
+with open("../sql/plata_auditoria_conteos.sql", "r", encoding="utf-8") as f:
+    sql_auditoria_plata = f.read().format(catalogo=catalogo)
+
+display(spark.sql(sql_auditoria_plata))
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC SELECT (SELECT count(*) FROM clientes.bronce.clientes)                                                  AS FilasBronce,
+# MAGIC /*SELECT (SELECT count(*) FROM clientes.bronce.clientes)                                                  AS FilasBronce,
 # MAGIC        (SELECT count(*) FROM clientes.plata.clientes)                                                   AS FilasPlata,
-# MAGIC        (SELECT count(*) FROM clientes.bronce.clientes) - (SELECT count(*) FROM clientes.plata.clientes) AS Descartadas;
+# MAGIC        (SELECT count(*) FROM clientes.bronce.clientes) - (SELECT count(*) FROM clientes.plata.clientes) AS Descartadas;*/
 
 # COMMAND ----------
 
@@ -363,13 +392,20 @@ display(resultado)
 
 # COMMAND ----------
 
+with open("../sql/plata_auditoria_dominios.sql", "r", encoding="utf-8") as f:
+    sql_dominios_plata = f.read().format(catalogo=catalogo)
+
+display(spark.sql(sql_dominios_plata))
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC SELECT 'bronce' AS Capa, count(DISTINCT ciudad) AS Ciudades, count(DISTINCT estado) AS Estados,
+# MAGIC /*SELECT 'bronce' AS Capa, count(DISTINCT ciudad) AS Ciudades, count(DISTINCT estado) AS Estados,
 # MAGIC        count(DISTINCT genero) AS Generos
 # MAGIC FROM clientes.bronce.clientes
 # MAGIC UNION ALL
 # MAGIC SELECT 'plata', count(DISTINCT Ciudad), count(DISTINCT Estado), count(DISTINCT Genero)
-# MAGIC FROM clientes.plata.clientes;
+# MAGIC FROM clientes.plata.clientes;*/
 
 # COMMAND ----------
 
@@ -382,8 +418,12 @@ display(resultado)
 
 # COMMAND ----------
 
+display(spark.sql(f"SHOW TBLPROPERTIES {catalogo}.plata.clientes"))
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC SHOW TBLPROPERTIES clientes.plata.clientes;
+# MAGIC /*SHOW TBLPROPERTIES clientes.plata.clientes;*/
 
 # COMMAND ----------
 
@@ -393,8 +433,12 @@ display(resultado)
 
 # COMMAND ----------
 
+display(spark.sql(f"SELECT * FROM {catalogo}.plata.clientes ORDER BY Apellidos, Nombres"))
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC SELECT * FROM clientes.plata.clientes ORDER BY Apellidos, Nombres;
+# MAGIC /*SELECT * FROM clientes.plata.clientes ORDER BY Apellidos, Nombres;*/
 
 # COMMAND ----------
 

@@ -22,7 +22,7 @@ CREATE TABLE {catalogo}.{esquema}.bronce_clientes (
     , ciudad        STRING
     , fecha_cambio  DATE
     , archivo       STRING
-    , fecha_ingesta TIMESTAMP
+    , createAt TIMESTAMP
 )
 USING DELTA
 COMMENT 'Tabla Bronce: historial acumulado de archivos ingresados con COPY INTO';

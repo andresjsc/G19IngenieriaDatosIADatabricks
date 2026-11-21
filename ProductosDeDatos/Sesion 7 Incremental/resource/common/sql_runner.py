@@ -1,11 +1,11 @@
 from pathlib import Path
 
-def ejecutar_script_sql(spark, nombre_archivo_sql: str, catalogo: str, esquema: str):
+def ejecutar_script_sql(spark, ruta_sql: str, catalogo: str, esquema: str):
     """Resuelve la ruta en /sql/ de forma absoluta, inyecta {catalogo} y {esquema} y ejecuta."""
     carpeta_base = Path(__file__).resolve().parent.parent
-    ruta_sql = carpeta_base / "sql" / Path(nombre_archivo_sql).name
+    ruta_absoluta = carpeta_base / "sql" / Path(ruta_sql).name
 
-    with open(ruta_sql, "r", encoding="utf-8") as f:
+    with open(ruta_absoluta, "r", encoding="utf-8") as f:
         script_sql = (
             f.read()
             .replace("{catalogo}", catalogo)

@@ -70,16 +70,25 @@
 import re
 from pyspark.sql import functions as F
 
+# COMMAND ----------
+
 dbutils.widgets.text("secreto_conexion", "stringconexioneventhub", "Secreto: connection string")
 dbutils.widgets.text("secreto_topico",   "topicoeventhub",         "Secreto: topic (event hub)")
 
+# COMMAND ----------
+
 catalogo_secretos, schema_secretos = "iot_sensores", "control"
 cadena_conexion = dbutils.secrets.get(catalog=catalogo_secretos, schema=schema_secretos,
-                                      key=dbutils.widgets.get("secreto_conexion").strip()).strip()
+                                      key="stringconexioneventhub").strip()
 event_hub       = dbutils.secrets.get(catalog=catalogo_secretos, schema=schema_secretos,
-                                      key=dbutils.widgets.get("secreto_topico").strip()).strip()
+                                      key="topicoeventhub").strip()
+print(cadena_conexion)
+print(event_hub)
+
+# COMMAND ----------
 
 servidor = re.search(r"sb://([^/;]+)", cadena_conexion)
+
 if servidor is None:
     raise Exception("El secreto de la conexión no es una connection string de Event Hubs (debe empezar por Endpoint=sb://).")
 servidor_kafka = f"{servidor.group(1)}:9093"
@@ -140,3 +149,27 @@ consulta = (df_stream.writeStream
             .toTable(tabla_bronce))
 
 consulta.awaitTermination()
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT
+# MAGIC       COUNT(*)           AS total_mensajes
+# MAGIC     , COUNT(DISTINCT partition) AS total_particiones
+# MAGIC     , MIN(offset)        AS primer_offset
+# MAGIC     , MAX(offset)        AS ultimo_offset
+# MAGIC     , MAX(_fecha_ingesta) AS ultima_ingesta
+# MAGIC FROM iot_sensores.bronce.mensajes_iot;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT
+# MAGIC       partition
+# MAGIC     , offset
+# MAGIC     , timestamp
+# MAGIC     , value
+# MAGIC     , _fecha_ingesta
+# MAGIC FROM iot_sensores.bronce.mensajes_iot
+# MAGIC ORDER BY offset DESC
+# MAGIC LIMIT 10;
